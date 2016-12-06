@@ -1,7 +1,16 @@
 package com.example.bench.movie;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.test.AndroidTestCase;
+
+import junit.framework.TestCase;
+
 import org.junit.Test;
 
+import static com.example.bench.movie.MovieDB.DATABASE_NAME;
+import static com.example.bench.movie.MovieDBContract.TABLE_NAME;
 import static org.junit.Assert.*;
 
 /**
@@ -9,9 +18,10 @@ import static org.junit.Assert.*;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-public class ExampleUnitTest {
+public class ExampleUnitTest extends TestCase {
     @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+    public void testdb() throws Exception {
+
     }
+
 }

@@ -1,17 +1,19 @@
 package com.example.bench.movie;
 
-import android.app.Activity;
+
 import android.content.Context;
-import android.content.Intent;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
-import android.util.DisplayMetrics;
+
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AbsListView;
+
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -20,9 +22,15 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static com.example.bench.movie.FetchMovieData.image_paths;
-import static java.security.AccessController.getContext;
+import static com.example.bench.movie.MovieDBContract.COL_BACKDROP;
+import static com.example.bench.movie.MovieDBContract.COL_DATEINS;
+import static com.example.bench.movie.MovieDBContract.COL_POPULARITY;
+import static com.example.bench.movie.MovieDBContract.COL_TITLE;
+import static com.example.bench.movie.MovieDBContract.TABLE_NAME;
+
 
 class MovieItemAdapter extends BaseAdapter {
     ArrayList<String> movie_names = FetchMovieData.movies_names;
@@ -36,7 +44,10 @@ class MovieItemAdapter extends BaseAdapter {
     static int colwidth;
     static int colheight;
 
-    public MovieItemAdapter(Context c) {
+    SQLiteDatabase db;
+    Cursor cursor;
+
+    public MovieItemAdapter(Context c) throws ExecutionException, InterruptedException {
         page = 1;
         context = c;
 
@@ -48,6 +59,9 @@ class MovieItemAdapter extends BaseAdapter {
         height = size.y;
         colwidth = (width / 2) - 40;
         colheight = (colwidth / 5) * 4;
+
+        db = new MovieDB(context).getWritableDatabase();
+        cursor = db.rawQuery("SELECT "+COL_TITLE + ", "+COL_BACKDROP+" FROM "+TABLE_NAME +" ORDER BY "+COL_POPULARITY +" ASC" , null);
     }
 
     @Override
@@ -72,9 +86,8 @@ class MovieItemAdapter extends BaseAdapter {
 
 //        Log.d(LOG_TAG, Integer.toString(i));
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+        cursor.moveToPosition(i);
         if (view == null) {
-//            grid = new View(context);
             grid = inflater.inflate(R.layout.movie_list_item, null);
 
         } else {
@@ -82,12 +95,12 @@ class MovieItemAdapter extends BaseAdapter {
         }
         TextView textView = (TextView) grid.findViewById(R.id.movie_name);
         ImageView imageView = (ImageView) grid.findViewById(R.id.movie_img);
-        textView.setText(movie_names.get(i).toString());
-        String builtUrl = imageBaseUrl + image_paths.get(i).toString();
+        textView.setText(cursor.getString(cursor.getColumnIndex(COL_TITLE)));
+        String builtUrl = imageBaseUrl + cursor.getString(cursor.getColumnIndex(COL_BACKDROP));
         Picasso.with(context).load(builtUrl).into(imageView);
 
         grid.setLayoutParams(new GridView.LayoutParams(colwidth, colheight));
-        Log.d(LOG_TAG, i + " : " + image_paths.get(i).toString());
+//        Log.d(LOG_TAG, i + " : " + image_paths.get(i).toString());
         grid.setPadding(8, 8, 8, 8);
         return grid;
     }

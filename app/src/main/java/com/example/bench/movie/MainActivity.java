@@ -29,6 +29,8 @@ import android.widget.Toast;
 
 import com.example.bench.movie.FetchMovieData;
 
+import java.util.concurrent.ExecutionException;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -59,20 +61,16 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //fetch data from api
-        FetchMovieData fetchData = new FetchMovieData(1, MainActivity.this);
+        GridView movies_list = (GridView) findViewById(R.id.movies_list);
+        FetchMovieData fetchData = new FetchMovieData(1, this, movies_list);
         fetchData.execute();
 
-        //set images to grid
-        GridView movies_list = (GridView) findViewById(R.id.movies_list);
-        movies_list.setAdapter(new MovieItemAdapter(MainActivity.this));
         movies_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 Toast.makeText(MainActivity.this, "You Clicked!", Toast.LENGTH_SHORT).show();
-//                Log.v(LOG_TAG, "You Clicked!");
             }
         });
     }
