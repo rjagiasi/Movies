@@ -1,6 +1,7 @@
 package com.example.bench.movie;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -70,7 +71,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Toast.makeText(MainActivity.this, "You Clicked!", Toast.LENGTH_SHORT).show();
+                int tag = (int) view.getTag();
+                Intent i = new Intent(MainActivity.this, FilmActivity.class);
+                i.putExtra("filmid", tag);
+
+                Toast.makeText(MainActivity.this, "You Clicked! " + tag, Toast.LENGTH_SHORT).show();
+                startActivity(i);
             }
         });
     }

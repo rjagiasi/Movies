@@ -42,13 +42,14 @@ public class FetchMovieData extends AsyncTask {
 
     public static final String LOG_TAG = "FetchMovieData";
     private int pageno;
-    public static ArrayList<String> movies_names = new ArrayList<>();
-    public static ArrayList<String> image_paths = new ArrayList<>();
+//    public static ArrayList<String> movies_names = new ArrayList<>();
+//    public static ArrayList<String> image_paths = new ArrayList<>();
     String JSONString = "";
     private static Context context;
     final String baseUrl = "https://api.themoviedb.org/3/discover/movie";
     GridView movies_list;
     String API_KEY = "";
+    int count;
 
     public FetchMovieData(int pageno, Context context, View grid) {
         this.pageno = pageno;
@@ -65,14 +66,19 @@ public class FetchMovieData extends AsyncTask {
     protected void onPreExecute() {
         // + " where (julianday('now')-julianday('" + COL_DATEINS + "')) >= 3"
         SQLiteDatabase db = new MovieDB(context).getWritableDatabase();
-        db.execSQL("DELETE FROM "+TABLE_NAME+" WHERE "+COL_DATEINS+" <= date('now','-3 day')");
-//        Cursor cursor = db.rawQuery("SELECT "+COL_TITLE + ", "+COL_BACKDROP+" from "+TABLE_NAME , null);
-//        Log.d(LOG_TAG, "Count : "+String.valueOf(cursor.getCount()));
-
+        db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE " + COL_DATEINS + " <= date('now','-3 day')");
+        Cursor cursor = db.rawQuery("SELECT " + COL_TITLE + ", " + COL_BACKDROP + " from " + TABLE_NAME, null);
+//        Log.d(LOG_TAG, "Count : " + String.valueOf(cursor.getCount()));
+        count = cursor.getCount();
+        db.close();
     }
 
     @Override
     protected Object doInBackground(Object[] objects) {
+
+        if (count >= 15) {
+            return null;
+        }
 
         Uri dataUri = Uri.parse(baseUrl).buildUpon().
                 appendQueryParameter("api_key", API_KEY).
@@ -112,22 +118,20 @@ public class FetchMovieData extends AsyncTask {
     @Override
     protected void onPostExecute(Object o) {
 
-
-
         try {
             JSONObject jsonParser = new JSONObject(JSONString);
             JSONArray results = jsonParser.getJSONArray("results");
             SQLiteDatabase db = new MovieDB(context).getWritableDatabase();
             String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            movies_names.clear();
+//            movies_names.clear();
 
             for (int i = 0, n = results.length(); i < n; i++) {
 //                Log.d(LOG_TAG, results.toString());
 
                 JSONObject movie = results.getJSONObject(i);
 
-                image_paths.add(movie.getString("backdrop_path"));
-                movies_names.add(movie.getString("original_title"));
+//                image_paths.add(movie.getString("backdrop_path"));
+//                movies_names.add(movie.getString("original_title"));
 
                 String insert_stmt = "Insert or replace into " + TABLE_NAME + " VALUES ("
                         + movie.getString("id") + ", '"
@@ -146,20 +150,22 @@ public class FetchMovieData extends AsyncTask {
                 db.execSQL(insert_stmt);
             }
 
+            db.close();
+
+        } catch (JSONException e) {
+//            e.printStackTrace();
+        } finally {
 
             try {
                 movies_list.setAdapter(new MovieItemAdapter(context));
+
             } catch (ExecutionException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-
 
     }
 }

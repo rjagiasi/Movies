@@ -24,7 +24,8 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-import static com.example.bench.movie.FetchMovieData.image_paths;
+import static android.provider.BaseColumns._ID;
+//import static com.example.bench.movie.FetchMovieData.image_paths;
 import static com.example.bench.movie.MovieDBContract.COL_BACKDROP;
 import static com.example.bench.movie.MovieDBContract.COL_DATEINS;
 import static com.example.bench.movie.MovieDBContract.COL_POPULARITY;
@@ -33,16 +34,14 @@ import static com.example.bench.movie.MovieDBContract.TABLE_NAME;
 
 
 class MovieItemAdapter extends BaseAdapter {
-    ArrayList<String> movie_names = FetchMovieData.movies_names;
+//    ArrayList<String> movie_names = FetchMovieData.movies_names;
     public Context context;
     int page;
     public static final String LOG_TAG = "MovieItemAdapter";
-    final String imageBaseUrl = "http://image.tmdb.org/t/p/w185/";
 
-    static int height;
-    static int width;
-    static int colwidth;
-    static int colheight;
+    public static final String imageBaseUrl = "http://image.tmdb.org/t/p/w342/";
+
+    static int height, width, colwidth, colheight;
 
     SQLiteDatabase db;
     Cursor cursor;
@@ -60,14 +59,16 @@ class MovieItemAdapter extends BaseAdapter {
         colwidth = (width / 2) - 40;
         colheight = (colwidth / 5) * 4;
 
-        db = new MovieDB(context).getWritableDatabase();
-        cursor = db.rawQuery("SELECT "+COL_TITLE + ", "+COL_BACKDROP+" FROM "+TABLE_NAME +" ORDER BY "+COL_POPULARITY +" ASC" , null);
+        db = new MovieDB(context).getReadableDatabase();
+        cursor = db.rawQuery("SELECT _ID, "+COL_TITLE + ", "+COL_BACKDROP+" FROM "+TABLE_NAME +" ORDER BY "+COL_POPULARITY +" DESC" , null);
+//        Log.d(LOG_TAG, "Count : " + String.valueOf(cursor.getCount()));
+//        db.close();
     }
 
     @Override
     public int getCount() {
 
-        return movie_names.size();
+        return cursor.getCount();
     }
 
     @Override
@@ -102,6 +103,7 @@ class MovieItemAdapter extends BaseAdapter {
         grid.setLayoutParams(new GridView.LayoutParams(colwidth, colheight));
 //        Log.d(LOG_TAG, i + " : " + image_paths.get(i).toString());
         grid.setPadding(8, 8, 8, 8);
+        grid.setTag(cursor.getInt(cursor.getColumnIndex(_ID)));
         return grid;
     }
 
