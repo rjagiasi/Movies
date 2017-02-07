@@ -3,6 +3,7 @@
     package="com.example.bench.movie">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -29,6 +30,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.bench.movie.MainActivity" />
         </activity>
+        <activity android:name=".SettingsActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".SearchActivity"
+            android:parentActivityName=".MainActivity"></activity>
     </application>
 
 </manifest>

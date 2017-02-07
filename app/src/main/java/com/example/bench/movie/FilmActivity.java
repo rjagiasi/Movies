@@ -41,7 +41,7 @@ import static com.example.bench.movie.MovieDBContract.TABLE_NAME;
 
 public class FilmActivity extends AppCompatActivity {
 
-    public static final String LOG_TAG = "FilmActivity";
+    private static final String LOG_TAG = "FilmActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +113,6 @@ public class FilmActivity extends AppCompatActivity {
         movie_data.setLayoutManager(mLayoutManager);
         movie_data.setItemAnimator(new DefaultItemAnimator());
         movie_data.setAdapter(new FilmDetailAdapter(tag, FilmActivity.this));
-        db.close();
     }
 
 

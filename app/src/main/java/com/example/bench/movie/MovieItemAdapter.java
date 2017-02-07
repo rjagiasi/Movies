@@ -37,7 +37,7 @@ class MovieItemAdapter extends BaseAdapter {
 //    ArrayList<String> movie_names = FetchMovieData.movies_names;
     public Context context;
     int page;
-    public static final String LOG_TAG = "MovieItemAdapter";
+    private static final String LOG_TAG = "MovieItemAdapter";
 
     public static final String imageBaseUrl = "http://image.tmdb.org/t/p/w342/";
 
@@ -67,7 +67,6 @@ class MovieItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-
         return cursor.getCount();
     }
 
@@ -104,6 +103,10 @@ class MovieItemAdapter extends BaseAdapter {
 //        Log.d(LOG_TAG, i + " : " + image_paths.get(i).toString());
         grid.setPadding(8, 8, 8, 8);
         grid.setTag(cursor.getInt(cursor.getColumnIndex(_ID)));
+
+        if(i==getCount())
+            db.close();
+
         return grid;
     }
 

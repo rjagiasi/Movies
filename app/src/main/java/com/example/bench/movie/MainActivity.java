@@ -2,8 +2,12 @@ package com.example.bench.movie;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.text.Layout;
@@ -19,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -36,6 +41,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final String LOG_TAG = "MainActivity";
+    public static int page = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +49,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -61,10 +58,17 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+//        navigationView.getMenu().getItem(0).setChecked(true);
 
-        GridView movies_list = (GridView) findViewById(R.id.movies_list);
-        FetchMovieData fetchData = new FetchMovieData(1, this, movies_list);
-        fetchData.execute();
+        final GridView movies_list = (GridView) findViewById(R.id.movies_list);
+        FetchMovieData fetchData = new FetchMovieData(page, this, movies_list);
+//        page++;
+
+
+        if (isNetworkAvailable())
+            fetchData.execute();
+        else
+            Toast.makeText(MainActivity.this, "Check Network!", Toast.LENGTH_SHORT).show();
 
         movies_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -75,10 +79,40 @@ public class MainActivity extends AppCompatActivity
                 Intent i = new Intent(MainActivity.this, FilmActivity.class);
                 i.putExtra("filmid", tag);
 
-                Toast.makeText(MainActivity.this, "You Clicked! " + tag, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "You Clicked! " + tag, Toast.LENGTH_SHORT).show();
                 startActivity(i);
             }
         });
+
+        /*
+        movies_list.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (movies_list.getLastVisiblePosition() == totalItemCount-1)
+                {
+                    FetchMovieData fetchData = new FetchMovieData(page, MainActivity.this, movies_list);
+                    page++;
+                    try {
+                        fetchData.execute().get();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });*/
+    }
+
+    @Override
+    public void onResume(){
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.getMenu().getItem(0).setChecked(true);
     }
 
     @Override
@@ -107,6 +141,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -119,15 +154,15 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.home) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.search) {
+            Intent searchIntent = new Intent(this, SearchActivity.class);
+            startActivity(searchIntent);
 
-        } else if (id == R.id.nav_share) {
+        }  else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
 
@@ -136,5 +171,12 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

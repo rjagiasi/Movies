@@ -3,6 +3,8 @@ package com.example.bench.movie;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -46,6 +48,7 @@ public class FetchMovieData extends AsyncTask {
 //    public static ArrayList<String> image_paths = new ArrayList<>();
     String JSONString = "";
     private static Context context;
+    Boolean updated_today = false;
     final String baseUrl = "https://api.themoviedb.org/3/discover/movie";
     GridView movies_list;
     String API_KEY = "";
@@ -56,6 +59,7 @@ public class FetchMovieData extends AsyncTask {
         this.context = context;
         this.movies_list = (GridView) grid;
         API_KEY = context.getResources().getString(R.string.key);
+        Log.d(LOG_TAG, String.valueOf(pageno));
     }
 
     public void setPageno(int pageno) {
@@ -66,24 +70,38 @@ public class FetchMovieData extends AsyncTask {
     protected void onPreExecute() {
         // + " where (julianday('now')-julianday('" + COL_DATEINS + "')) >= 3"
         SQLiteDatabase db = new MovieDB(context).getWritableDatabase();
-        db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE " + COL_DATEINS + " <= date('now','-3 day')");
+        db.delete(TABLE_NAME, null, null);
         Cursor cursor = db.rawQuery("SELECT " + COL_TITLE + ", " + COL_BACKDROP + " from " + TABLE_NAME, null);
 //        Log.d(LOG_TAG, "Count : " + String.valueOf(cursor.getCount()));
         count = cursor.getCount();
+        Cursor c2 = db.rawQuery("SELECT EXISTS(SELECT 1 from " + TABLE_NAME +" WHERE " + COL_DATEINS + " <= date('now','0 day'))", null);
+        c2.moveToPosition(0);
+        int i = c2.getInt(0);
+        if(i == 1) {
+            updated_today = true;
+        }
+        cursor.close();
+        c2.close();
         db.close();
     }
 
     @Override
     protected Object doInBackground(Object[] objects) {
 
-        if (count >= 15) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if ((updated_today && count>(pageno*20))|| !(activeNetworkInfo.isConnected())) {
+//            Log.d(LOG_TAG, String.valueOf(updated_today));
             return null;
         }
 
         Uri dataUri = Uri.parse(baseUrl).buildUpon().
                 appendQueryParameter("api_key", API_KEY).
                 appendQueryParameter("sort_by", "popularity.desc").
-                appendQueryParameter("page", Integer.toString(pageno)).build();
+                appendQueryParameter("page", Integer.toString(pageno)).
+                build();
 
         Log.d(LOG_TAG, dataUri.toString());
 
@@ -105,7 +123,7 @@ public class FetchMovieData extends AsyncTask {
             dataReader.close();
             urlConnection.disconnect();
 
-            Log.d(LOG_TAG, JSONString);
+//            Log.d(LOG_TAG, JSONString);
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -145,8 +163,8 @@ public class FetchMovieData extends AsyncTask {
                         + movie.getString("popularity")
                         + "');";
 
-                Log.d(LOG_TAG, insert_stmt);
-
+//                Log.d(LOG_TAG, insert_stmt);
+                db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE " + COL_DATEINS + " <= date('now','-3 day')");
                 db.execSQL(insert_stmt);
             }
 
