@@ -1,0 +1,1 @@
+Application to search and browse summary and rating of various movies.

@@ -1,6 +1,7 @@
 package com.example.bench.movie;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -67,7 +69,16 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-
+        search_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Log.d(LOG_TAG, (String) view.getTag());
+                int tag = (int) view.getTag();
+                Intent i = new Intent(SearchActivity.this, FilmActivity.class);
+                i.putExtra("filmid", tag);
+                startActivity(i);
+            }
+        });
 
 
     }

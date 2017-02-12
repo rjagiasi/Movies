@@ -44,20 +44,22 @@ public class FetchMovieData extends AsyncTask {
 
     public static final String LOG_TAG = "FetchMovieData";
     private int pageno;
-//    public static ArrayList<String> movies_names = new ArrayList<>();
+    //    public static ArrayList<String> movies_names = new ArrayList<>();
 //    public static ArrayList<String> image_paths = new ArrayList<>();
     String JSONString = "";
     private static Context context;
     Boolean updated_today = false;
     final String baseUrl = "https://api.themoviedb.org/3/discover/movie";
     GridView movies_list;
+    MovieItemAdapter movieItemAdapter;
     String API_KEY = "";
     int count;
 
-    public FetchMovieData(int pageno, Context context, View grid) {
+    public FetchMovieData(int pageno, Context context, View grid, MovieItemAdapter movieItemAdapter) {
         this.pageno = pageno;
         this.context = context;
         this.movies_list = (GridView) grid;
+        this.movieItemAdapter = movieItemAdapter;
         API_KEY = context.getResources().getString(R.string.key);
         Log.d(LOG_TAG, String.valueOf(pageno));
     }
@@ -68,16 +70,16 @@ public class FetchMovieData extends AsyncTask {
 
     @Override
     protected void onPreExecute() {
-        // + " where (julianday('now')-julianday('" + COL_DATEINS + "')) >= 3"
+
         SQLiteDatabase db = new MovieDB(context).getWritableDatabase();
-        db.delete(TABLE_NAME, null, null);
+//        db.delete(TABLE_NAME, null, null);
         Cursor cursor = db.rawQuery("SELECT " + COL_TITLE + ", " + COL_BACKDROP + " from " + TABLE_NAME, null);
-//        Log.d(LOG_TAG, "Count : " + String.valueOf(cursor.getCount()));
+
         count = cursor.getCount();
-        Cursor c2 = db.rawQuery("SELECT EXISTS(SELECT 1 from " + TABLE_NAME +" WHERE " + COL_DATEINS + " <= date('now','0 day'))", null);
+        Cursor c2 = db.rawQuery("SELECT EXISTS(SELECT 1 from " + TABLE_NAME + " WHERE " + COL_DATEINS + " <= date('now','0 day'))", null);
         c2.moveToPosition(0);
         int i = c2.getInt(0);
-        if(i == 1) {
+        if (i == 1) {
             updated_today = true;
         }
         cursor.close();
@@ -92,8 +94,9 @@ public class FetchMovieData extends AsyncTask {
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-        if ((updated_today && count>(pageno*20))|| !(activeNetworkInfo.isConnected())) {
+        if ((updated_today && count > (pageno * 20)) || !(activeNetworkInfo.isConnected())) {
 //            Log.d(LOG_TAG, String.valueOf(updated_today));
+//            Toast.makeText(context, "Check Network!", Toast.LENGTH_SHORT).show();
             return null;
         }
 
@@ -174,15 +177,7 @@ public class FetchMovieData extends AsyncTask {
 //            e.printStackTrace();
         } finally {
 
-            try {
-                movies_list.setAdapter(new MovieItemAdapter(context));
-
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
+                movies_list.deferNotifyDataSetChanged();
         }
 
     }

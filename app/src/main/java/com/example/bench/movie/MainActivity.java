@@ -1,10 +1,12 @@
 package com.example.bench.movie;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -58,17 +60,22 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-//        navigationView.getMenu().getItem(0).setChecked(true);
+
 
         final GridView movies_list = (GridView) findViewById(R.id.movies_list);
-        FetchMovieData fetchData = new FetchMovieData(page, this, movies_list);
-//        page++;
 
 
-        if (isNetworkAvailable())
-            fetchData.execute();
-        else
-            Toast.makeText(MainActivity.this, "Check Network!", Toast.LENGTH_SHORT).show();
+        MovieItemAdapter movieItemAdapter = null;
+        try {
+            movieItemAdapter = new MovieItemAdapter(MainActivity.this, page);
+            movies_list.setAdapter(movieItemAdapter);
+            new FetchMovieData(page, this, movies_list, movieItemAdapter).execute();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         movies_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -79,38 +86,38 @@ public class MainActivity extends AppCompatActivity
                 Intent i = new Intent(MainActivity.this, FilmActivity.class);
                 i.putExtra("filmid", tag);
 
-//                Toast.makeText(MainActivity.this, "You Clicked! " + tag, Toast.LENGTH_SHORT).show();
                 startActivity(i);
             }
         });
 
-        /*
+
+        final MovieItemAdapter finalMovieItemAdapter = movieItemAdapter;
         movies_list.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
 
             }
 
+            @SuppressLint("NewApi")
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if (movies_list.getLastVisiblePosition() == totalItemCount-1)
-                {
-                    FetchMovieData fetchData = new FetchMovieData(page, MainActivity.this, movies_list);
+                if (movies_list.getLastVisiblePosition() == totalItemCount - 1) {
+                    View v = movies_list.getChildAt(0);
+                    int scrollposition = movies_list.getLastVisiblePosition();
+                    int top = (v == null) ? 0 : (v.getTop() - movies_list.getPaddingTop());
+
+                    new FetchMovieData(page, MainActivity.this, movies_list, finalMovieItemAdapter).execute();
                     page++;
-                    try {
-                        fetchData.execute().get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                    movies_list.setSelectionFromTop(scrollposition, top);
+
+
                 }
             }
-        });*/
+        });
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.getMenu().getItem(0).setChecked(true);
     }
@@ -162,7 +169,7 @@ public class MainActivity extends AppCompatActivity
             Intent searchIntent = new Intent(this, SearchActivity.class);
             startActivity(searchIntent);
 
-        }  else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
 

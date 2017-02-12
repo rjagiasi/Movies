@@ -65,6 +65,8 @@ public class SearchListAdapter extends BaseAdapter {
             String title = result_item.getString("original_title");
             String release_date = result_item.getString("release_date");
 
+            convertView.setTag(Integer.parseInt(result_item.getString("id")));
+
             ((TextView) convertView.findViewById(R.id.search_title)).setText(title);
             ((TextView) convertView.findViewById(R.id.search_release_date)).setText("Release Date : " + release_date);
 

@@ -34,7 +34,7 @@ import static com.example.bench.movie.MovieDBContract.TABLE_NAME;
 
 
 class MovieItemAdapter extends BaseAdapter {
-//    ArrayList<String> movie_names = FetchMovieData.movies_names;
+    //    ArrayList<String> movie_names = FetchMovieData.movies_names;
     public Context context;
     int page;
     private static final String LOG_TAG = "MovieItemAdapter";
@@ -46,8 +46,8 @@ class MovieItemAdapter extends BaseAdapter {
     SQLiteDatabase db;
     Cursor cursor;
 
-    public MovieItemAdapter(Context c) throws ExecutionException, InterruptedException {
-        page = 1;
+    public MovieItemAdapter(Context c, int page) throws ExecutionException, InterruptedException {
+        this.page = page;
         context = c;
 
         Display display = ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE))
@@ -60,13 +60,13 @@ class MovieItemAdapter extends BaseAdapter {
         colheight = (colwidth / 5) * 4;
 
         db = new MovieDB(context).getReadableDatabase();
-        cursor = db.rawQuery("SELECT _ID, "+COL_TITLE + ", "+COL_BACKDROP+" FROM "+TABLE_NAME +" ORDER BY "+COL_POPULARITY +" DESC" , null);
-//        Log.d(LOG_TAG, "Count : " + String.valueOf(cursor.getCount()));
-//        db.close();
+        cursor = db.rawQuery("SELECT _ID, " + COL_TITLE + ", " + COL_BACKDROP + " FROM " + TABLE_NAME, null);
+
     }
 
     @Override
     public int getCount() {
+//        Log.d(LOG_TAG, Integer.toString(cursor.getCount()));
         return cursor.getCount();
     }
 
@@ -84,7 +84,7 @@ class MovieItemAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         View grid;
 
-//        Log.d(LOG_TAG, Integer.toString(i));
+
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cursor.moveToPosition(i);
         if (view == null) {
@@ -104,11 +104,16 @@ class MovieItemAdapter extends BaseAdapter {
         grid.setPadding(8, 8, 8, 8);
         grid.setTag(cursor.getInt(cursor.getColumnIndex(_ID)));
 
-        if(i==getCount())
+        if (i == getCount())
             db.close();
 
         return grid;
     }
 
-
+    @Override
+    public void notifyDataSetChanged() {
+        Log.d(LOG_TAG, "Hello");
+        cursor = db.rawQuery("SELECT _ID, " + COL_TITLE + ", " + COL_BACKDROP + " FROM " + TABLE_NAME, null);
+//        super.notifyDataSetChanged();
+    }
 }

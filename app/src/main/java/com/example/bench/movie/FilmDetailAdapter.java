@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
 import static com.example.bench.movie.MovieDBContract.COL_OVERVIEW;
 import static com.example.bench.movie.MovieDBContract.COL_RELEASE_DATE;
 import static com.example.bench.movie.MovieDBContract.COL_TITLE;

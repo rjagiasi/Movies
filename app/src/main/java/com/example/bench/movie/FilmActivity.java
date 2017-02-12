@@ -51,7 +51,6 @@ public class FilmActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.hide();
         fab.setOnClickListener(new View.OnClickListener() {
